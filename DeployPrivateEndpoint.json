@@ -1,0 +1,157 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "westus",
+        "westcentralus",
+        "westus2",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "northcentralus",
+        "southcentralus",
+        "South Central US"
+      ]
+    },
+    "PrivateEndPointName": {
+      "type": "string"
+    },
+    "vnetId": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. Get it by using Get-AzSubscription cmdlet."
+      }
+    },
+    "TargetResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. Get it by using Get-AzSubscription cmdlet."
+      }
+    },
+    "TargetSubResourcename": {
+      "type": "array",
+      "metadata": {
+        "description": "Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. Get it by using Get-AzSubscription cmdlet."
+      }
+    },
+    "PESubnetname": {
+      "type": "string",
+      "defaultValue": "default",
+      "metadata": {
+        "description": "Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. Get it by using Get-AzSubscription cmdlet."
+      }
+    },
+    "Initiative": {
+      "type": "string",
+      "metadata": {
+        "description": "Initiative behind the resource"
+      }
+    },
+    "LeaseDuration": {
+      "type": "string",
+      "metadata": {
+        "description": "when should the resource lease expire"
+      }
+    },
+    "CreationDate": {
+      "type": "string",
+      "defaultValue": "[utcNow('yyyy-MM-dd')]",
+      "metadata": {
+        "description": "Date the resource was created"
+      }
+    }
+
+  },
+  "variables": {
+    "Environment": "[resourceGroup().tags.environment]",
+    "privateEndpointName": "[concat('pe-', parameters('PrivateEndPointName'), '-', variables('Environment'))]",
+    "privateDnsZoneName": "[concat('privatelink.', parameters('PrivateEndPointName'), '.windows.net')]",
+    "pvtendpointdnsgroupname": "[concat(variables('privateEndpointName'),'/mydnsgroupname')]"
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2020-06-01",
+      "name": "[variables('privateEndpointName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+      ],
+      "tags": {
+        "LeaseDuration": "[parameters('LeaseDuration')]",
+        "CreationDate": "[parameters('CreationDate')]",
+        "Initiative": "[parameters('initiative')]"
+      },
+      "properties": {
+        "subnet": {
+            "id": "[concat(parameters('vnetid'), '/subnets', '/', parameters('PESubnetname'))]"
+
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[variables('privateEndpointName')]",
+            "properties": {
+              "privateLinkServiceId": "[parameters('TargetResourceId')]",
+              "groupIds": "[parameters('TargetsubResourcename')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2020-01-01",
+      "name": "[variables('privateDnsZoneName')]",
+      "location": "global",
+      "dependsOn": [
+        "[variables('privateEndpointName')]"
+      ],
+      "tags": {
+        "LeaseDuration": "[parameters('LeaseDuration')]",
+        "CreationDate": "[parameters('CreationDate')]",
+        "Initiative": "[parameters('initiative')]"
+      },
+      "properties": ""
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2020-01-01",
+      "name": "[concat(variables('privateDnsZoneName'), '/', variables('privateDnsZoneName'), '-link')]",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
+      ],
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "[parameters('vnetid')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2020-06-01",
+      "name": "[variables('pvtendpointdnsgroupname')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]",
+        "[variables('privateEndpointName')]"
+      ],
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "config1",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
+            }
+          }
+        ]
+      }
+    }
+
+  ],
+  "outputs": {}
+}
