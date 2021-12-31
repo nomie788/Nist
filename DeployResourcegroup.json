@@ -1,0 +1,137 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ProjectName": {
+      "type": "string",
+      "metadata": {
+        "description": "ProjectName"
+      }
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "westus",
+        "westcentralus",
+        "westus2",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "northcentralus",
+        "southcentralus"
+      ]
+    },
+    "CostAppOwnerManager": {
+      "type": "string",
+      "metadata": {
+        "description": "Email id of project Owner Manager"
+      }
+    },
+    "CostAppOwnerTech": {
+      "type": "string",
+      "metadata": {
+        "description": "Email id of Tech Owner"
+      }
+    },
+    "CostBudgetOwner": {
+      "type": "string",
+      "metadata": {
+        "description": "Email id of Budget Owner"
+      }
+    },
+    "CostCostCenter": {
+      "type": "string",
+      "metadata": {
+        "description": "Cost Center id of the budget Owner"
+      }
+    },
+    "CostRegion": {
+      "type": "string",
+      "allowedValues": [
+        "Global",
+        "LATAM",
+        "NorthAmerica"
+      ],
+      "metadata": {
+        "description": "Budget Owner Region"
+      }
+    },
+    "CostDivision": {
+      "type": "string",
+      "metadata": {
+        "description": "Budget Owner Region"
+      }
+    },
+    "CostVP": {
+      "type": "string",
+      "metadata": {
+        "description": "Email id of Budget Owner VP"
+      }
+    },
+    "MAL ID": {
+      "type": "string",
+      "metadata": {
+        "description": "MAL Sys ID of the project"
+      }
+    },
+    "SR": {
+      "type": "string",
+      "metadata": {
+        "description": "SR Number"
+      }
+    },
+    "Environment": {
+      "type": "string",
+      "allowedValues": [
+        "Dev",
+        "Test",
+        "Prod",
+        "POC",
+        "Sandbox",
+        "NonProd"
+      ],
+      "metadata": {
+        "description": "Dev/Test or Production."
+      }
+    },
+    "Budget": {
+      "type": "string",
+      "metadata": {
+        "description": "Budget set for the project"
+      }
+    },
+    "RequestID": {
+      "type": "string",
+      "metadata": {
+        "description": "Date the resource was created"
+      }
+    }
+  },
+  "variables": {
+    "RGName": "[concat('RG-', parameters('ProjectName'), '-', parameters('Environment'))]"
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2021-04-01",
+      "name": "[variables('RGName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "CostAppOwnerManager": "[parameters('costappownermanager')]",
+        "CostAppOwnerTech": "[parameters('costappownertech')]",
+        "CostBudgetOwner": "[parameters('costbudgetowner')]",
+        "CostCostCenter": "[parameters('costcostcenter')]",
+        "CostRegion": "[parameters('costRegion')]",
+        "CostVP": "[parameters('costvp')]",
+        "MAL ID": "[parameters('Mal ID')]",
+        "SR": "[parameters('SR')]",
+        "Environment": "[parameters('Environment')]",
+        "RequestID": "[parameters('RequestID')]",
+        "Budget": "[parameters('Budget')]",
+        "CostDivision": "[parameters('CostDivision')]"
+      }
+    }
+  ],
+  "outputs": {}
+}
