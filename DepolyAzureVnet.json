@@ -1,0 +1,112 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "Address prefix"
+      }
+    },
+    "subnets": {
+      "type": "array",
+      "defaultValue": [
+        {
+          "name": "Subnet-1",
+          "addressPrefix": "10.0.1.0/24"
+        },
+        {
+          "name": "Subnet-2",
+          "addressPrefix": "10.0.2.0/24"
+        },
+        {
+          "name": "Subnet-3",
+          "addressPrefix": "10.0.3.0/24"
+        },
+        {
+          "name": "Subnet-4",
+          "addressPrefix": "10.0.4.0/24"
+        },
+        {
+          "name": "Subnet-5",
+          "addressPrefix": "10.0.5.0/24"
+        }
+      ],
+      "metadata": {
+        "description": "Enter Subnet name and prefix as an array"
+      }
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "westus",
+        "westcentralus",
+        "westus2",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "northcentralus",
+        "southcentralus"
+      ]
+    },
+    "Initiative": {
+      "type": "string",
+      "metadata": {
+        "description": "Initiative behind the resource"
+      }
+    },
+    "LeaseDuration": {
+      "type": "string",
+      "metadata": {
+        "description": "when should the resource lease expire"
+      }
+    },
+    "CreationDate": {
+      "type": "string",
+      "defaultValue": "[utcNow('yyyy-MM-dd')]",
+      "metadata": {
+        "description": "Date the resource was created"
+      }
+    }
+
+  },
+  "variables": {
+    "subtype": "[resourceGroup().tags.environment]",
+    "VnetName": "[concat('Vnet-', variables('subtype'), '-', parameters('location'))]"
+
+  },
+  "resources": [
+    {
+      "name": "[variables('vnetName')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2017-10-01",
+      "tags": {
+        "LeaseDuration": "[parameters('LeaseDuration')]",
+        "CreationDate": "[parameters('CreationDate')]",
+        "Initiative": "[parameters('initiative')]"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vNetPrefix')]"
+          ]
+        },
+        "copy": [
+          {
+            "name": "subnets",
+            "count": "[length(parameters('subnets'))]",
+            "input": {
+              "name": "[parameters('subnets')[copyIndex('subnets')].name]",
+              "properties": {
+                "addressPrefix": "[parameters('subnets')[copyIndex('subnets')].addressPrefix]"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {}
+} 
