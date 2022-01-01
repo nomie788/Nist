@@ -1,0 +1,109 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sku": {
+      "type": "string",
+      "allowedValues": [
+        "pergb2018",
+  //      "Free",
+        "Standalone",
+        "PerNode",
+        "Standard",
+        "Premium"
+      ],
+      "defaultValue": "pergb2018",
+      "metadata": {
+        "description": "Pricing tier: PerGB2018 or legacy tiers (Free, Standalone, PerNode, Standard or Premium) which are not available to all customers."
+      }
+    },
+    "retentionInDays": {
+      "type": "int",
+      "defaultValue": 120,
+      "metadata": {
+        "description": "Number of days to retain data."
+      }
+    },
+    "resourcePermissions": {
+      "type": "bool",
+      "metadata": {
+        "description": "true to use resource or workspace permissions. false to require workspace permissions."
+      }
+    },
+    "heartbeatTableRetention": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of days to retain data in HeartBeat table."
+      }
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "westus",
+        "westcentralus",
+        "westus2",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "northcentralus",
+        "southcentralus"
+      ]
+    },
+    "Initiative": {
+      "type": "string",
+      "metadata": {
+        "description": "Initiative behind the resource"
+      }
+    },
+    "LeaseDuration": {
+      "type": "string",
+      "metadata": {
+        "description": "when should the resource lease expire"
+      }
+    },
+    "CreationDate": {
+      "type": "string",
+      "defaultValue": "[utcNow('yyyy-MM-dd')]",
+      "metadata": {
+        "description": "Date the resource was created"
+      }
+    }
+
+  },
+  "variables": {
+    "subtype": "[resourceGroup().tags.environment]",
+    "WorkspaceName": "[concat('La-', parameters('initiative'),  '-',  variables('subtype'), '-', parameters('location'))]"
+
+  },
+  "resources":[
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "name": "[variables('WorkspaceName')]",
+      "apiVersion": "2020-08-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "[parameters('sku')]"
+        },
+        "retentionInDays": "[parameters('retentionInDays')]",
+        "features": {
+          "enableLogAccessUsingOnlyResourcePermissions": "[parameters('resourcePermissions')]"
+        }
+      },
+      "resources": [
+        {
+          "type": "Microsoft.OperationalInsights/workspaces/tables",
+          "apiVersion": "2020-08-01",
+          "name": "[concat(variables('workspaceName'),'/','Heartbeat')]",
+          "dependsOn": [
+            "[variables('workspaceName')]"
+          ],
+          "properties": {
+            "RetentionInDays": "[parameters('heartbeatTableRetention')]"
+          }
+        }
+      ]
+    }
+  ],
+    "outputs": {}
+  }
