@@ -1,0 +1,386 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "keyVaultName": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the name of the key vault."
+      }
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "westus",
+        "westcentralus",
+        "westus2",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "northcentralus",
+        "southcentralus",
+        "South Central US"
+      ]
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "standard",
+      "allowedValues": [
+        "standard",
+        "premium"
+      ],
+      "metadata": {
+        "description": "Specifies whether the key vault is a standard vault or a premium vault."
+      }
+    },
+    "VaultadminName": {
+      "type": "String",
+      "metadata": {
+        "description": "Resource name of User Assigned Identity passed in workspace.properties.primaryUserAssignedIdentity."
+      }
+    },
+    "enabledForDeployment": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Specifies whether Azure Virtual Machines are permitted to retrieve certificates stored as secrets from the key vault."
+      }
+    },
+    "enabledForDiskEncryption": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Specifies whether Azure Disk Encryption is permitted to retrieve secrets from the vault and unwrap keys."
+      }
+    },
+    "AccessPolicy": {
+      "type": "string",
+      "defaultValue": "rbac",
+      "allowedValues": [
+        "VaultAccess",
+        "Rbac"
+      ],
+      "metadata": {
+        "description": "Provide vault access on access policy"
+      }
+    },
+    "enabledForTemplateDeployment": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Specifies whether Azure Resource Manager is permitted to retrieve secrets from the key vault."
+      }
+    },
+    "enablePrivateLink": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Enable private link for keyvault? ...will deploy linked template"
+      }
+    },
+
+    "tenantId": {
+      "type": "string",
+      "defaultValue": "[subscription().tenantId]",
+      "metadata": {
+        "description": "Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. Get it by using Get-AzSubscription cmdlet."
+      }
+    },
+    "vnetId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Specify Resource Id of the Vnet you want to deploy Priavte endpoint on to"
+      }
+    },
+    "Diagworkspaceid": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Resource id of the Workspace vault diagnostics storage "
+      }
+    },
+
+    "logsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 0,
+      "maxValue": 365,
+      "minValue": 0,
+      "metadata": {
+        "description": "Specifies the number of days that logs are gonna be kept. If you do not want to apply any retention policy and retain data forever, set value to 0."
+      }
+    },
+    "PESubnetname": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the Subnet that should be tied to the Priavte endpoint for Keyvault"
+      }
+    },
+    "ObjectId": {
+      "type": "string",
+      "defaultValue": "bdc1cf08-4f34-4da8-9e22-55718b75f185",
+      "metadata": {
+        "description": "Specifies the object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies. Get it by using Get-AzADUser or Get-AzADServicePrincipal cmdlets. (Application ID)"
+      }
+    },
+    "roleName": {
+      "type": "string",
+      "defaultValue": "Key Vault Secrets User",
+      "allowedValues": [
+        "Key Vault Administrator",
+        "Key Vault Certificates Officer",
+        "Key Vault Crypto Officer",
+        "Key Vault Crypto Service Encryption User",
+        "Key Vault Crypto User",
+        "Key Vault Reader",
+        "Key Vault Secrets Officer",
+        "Key Vault Secrets User"
+      ],
+      "metadata": {
+        "description": "Specifies the role the user will get with the secret in the vault. Valid values are: Key Vault Administrator, Key Vault Certificates Officer, Key Vault Crypto Officer, Key Vault Crypto Service Encryption User, Key Vault Crypto User, Key Vault Reader, Key Vault Secrets Officer, Key Vault Secrets User."
+      }
+    },
+    "Initiative": {
+      "type": "string",
+      "metadata": {
+        "description": "Initiative behind the resource"
+      }
+    },
+    "LeaseDuration": {
+      "type": "string",
+      "metadata": {
+        "description": "when should the resource lease expire"
+      }
+    },
+    "CreationDate": {
+      "type": "string",
+      "defaultValue": "[utcNow('yyyy-MM-dd')]",
+      "metadata": {
+        "description": "Date the resource was created"
+      }
+    },
+    "secretsPermissions": {
+      "type": "array",
+      "defaultValue": [
+        "Get",
+        "List",
+        "Set",
+        "Delete",
+        "Recover",
+        "Backup",
+        "Restore"
+      ],
+      "metadata": {
+        "description": "Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge."
+      }
+    },
+    "KeyPermissions": {
+      "type": "array",
+      "defaultValue": [
+        "Get",
+        "List",
+        "Update",
+        "Create",
+        "Import",
+        "Delete",
+        "Recover",
+        "Backup",
+        "Restore"
+      ],
+      "metadata": {
+        "description": "Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge."
+      }
+    },
+    "CertificatePermissions": {
+      "type": "array",
+      "defaultValue": [
+        "Get",
+        "List",
+        "Update",
+        "Create",
+        "Import",
+        "Delete",
+        "Recover",
+        "Backup",
+        "Restore",
+        "ManageContacts",
+        "ManageIssuers",
+        "GetIssuers",
+        "ListIssuers",
+        "SetIssuers",
+        "DeleteIssuers"
+      ],
+      "metadata": {
+        "description": "Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge."
+      }
+    },
+    "LinkedTemplateUri": {
+      "type": "string",
+      "defaultValue": "https://cs710032000dddd313c.blob.core.windows.net/armtemplates/DeployPrivateEndpoint.json?sp=r&st=2022-01-02T22:32:31Z&se=2022-01-20T06:32:31Z&spr=https&sv=2020-08-04&sr=b&sig=qSDLy499MAWkUH5fyXVJ7bJ1GvBd6DIt2%2B%2Fu8XzAM9g%3D",
+      "metadata": {
+        "description": "Date the resource was created"
+      }
+    }
+  },
+  "functions": [],
+  "variables": {
+    "VaultName": "[concat('Kv', parameters('Keyvaultname'))]",
+    "primaryUserAssignedIdentity": "[parameters('VaultadminName')]",
+    "VaultAdministratorRoleName": "[parameters('rolename')]",
+    "keyVaultAdministratorRoleDefinition": "00482a5a-887f-4fb3-b363-3b7fe8e74483",
+    "roleIdMapping": {
+      "Key Vault Administrator": "00482a5a-887f-4fb3-b363-3b7fe8e74483",
+      "Key Vault Certificates Officer": "a4417e6f-fecd-4de8-b567-7b0420556985",
+      "Key Vault Crypto Officer": "14b46e9e-c2b7-41b4-b07b-48a6ebf60603",
+      "Key Vault Crypto Service Encryption User": "e147488a-f6f5-4113-8e2d-b22465e65bf6",
+      "Key Vault Crypto User": "12338af0-0e69-4776-bea7-57ae8d297424",
+      "Key Vault Reader": "21090545-7ca7-4776-b22c-e363652d74d2",
+      "Key Vault Secrets Officer": "b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
+      "Key Vault Secrets User": "4633458b-17de-408a-b874-0445c86b69e6"
+    },
+    "rbac": "",
+    "VaultAccess": [
+      {
+        "tenantId": "[parameters('tenantId')]",
+        "objectId": "[parameters('objectId')]",
+        "permissions": {
+          "secrets": "[parameters('secretsPermissions')]",
+          "keys": "[parameters('KeyPermissions')]",
+          "certificates": "[parameters('CertificatePermissions')]"
+
+
+        }
+      }
+    ],
+    "accessPolicies": "[if(equals(parameters('AccessPolicy'), 'VaultAccess'), variables('VaultAccess'), variables('rbac'))]",
+    "Environment": "[resourceGroup().tags.environment]",
+    "privateEndpointName": "[concat('pe-', variables('VaultName'), '-', variables('Environment'))]",
+    "privateDnsZoneName": "[concat('privatelink.', variables('PrivateEndPointName'), '.windows.net')]",
+    "pvtendpointdnsgroupname": "[concat(variables('privateEndpointName'),'/mydnsgroupname')]",
+    "TargetResourceId": "[resourceId('Microsoft.KeyVault/vaults', variables('vaultName'))]",
+    "TargetsubResourceName": "vault"
+
+  },
+  "resources": [
+    {
+      "apiVersion": "2021-06-01-preview",
+      "location": "[parameters('location')]",
+      "name": "[variables('Vaultname')]",
+      "type": "Microsoft.KeyVault/vaults",
+      "properties": {
+        "enabledForDeployment": "[parameters('enabledForDeployment')]",
+        "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
+        "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+        "enablePurgeProtection": true,
+        "enableRbacAuthorization": true,
+        "accessPolicies": "[variables('accessPolicies')]",
+        "enableSoftDelete": "true",
+        "networkAcls": {
+          "defaultAction": "Allow",
+          "bypass": "AzureServices"
+        },
+        "sku": {
+          "family": "A",
+          "name": "[parameters('skuName')]"
+        },
+        "tenantId": "[parameters('tenantId')]"
+      },
+      "tags": {
+        "LeaseDuration": "[parameters('LeaseDuration')]",
+        "CreationDate": "[parameters('CreationDate')]",
+        "Initiative": "[parameters('initiative')]"
+      },
+      "resources": [
+        {
+          "type": "Microsoft.KeyVault/vaults/providers/diagnosticsettings",
+          "name": "[concat(variables('VaultName'), '/Microsoft.Insights/service')]",
+          "apiVersion": "2016-09-01",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', variables('VaultName'))]"
+          ],
+          "properties": {
+            "workspaceId": "[parameters('diagworkspaceid')]",
+            "logs": [
+              {
+                "category": "AuditEvent",
+                "enabled": true,
+                "retentionPolicy": {
+                  "enabled": true,
+                  "days": "[parameters('LogsRetentionInDays')]"
+                }
+              }
+            ]
+          }
+        }
+      ]
+
+    },
+     {
+      "condition": "[equals(parameters('accesspolicy'), 'Rbac')]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2020-04-01-preview",
+      "scope": "[format('Microsoft.KeyVault/vaults/{0}', variables('VaultName'))]",
+      "name": "[guid(variables('roleIdMapping')[parameters('roleName')], parameters('objectId'), resourceId('Microsoft.KeyVault/vaults', variables('VaultName')))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleIdMapping')[parameters('roleName')])]",
+        "principalId": "[parameters('objectId')]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))]"
+      ]
+    },
+    {
+      "condition": "[parameters('enablePrivatelink')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "linkedTemplate",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))]"
+     ],
+     "properties": {
+      "mode": "Incremental",
+      "templateLink": {
+        "uri": "https://cs710032000dddd313c.blob.core.windows.net/armtemplates/DeployPrivateEndpoint.json?sp=r&st=2022-01-02T22:32:31Z&se=2022-01-20T06:32:31Z&spr=https&sv=2020-08-04&sr=b&sig=qSDLy499MAWkUH5fyXVJ7bJ1GvBd6DIt2%2B%2Fu8XzAM9g%3D",
+        "contentVersion": "1.0.0.0"
+      },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "vnetId": {
+            "value": "[parameters('vnetid')]"
+          },
+          "TargetResourceId": {
+            "value": "[variables('TargetResourceId')]"
+          },
+          "TargetSubResourcename": {
+            "value": [
+              "[variables('TargetsubResourceName')]"
+            ]
+          },
+          "PESubnetname": {
+            "value": "[parameters('PESubnetname')]"
+          },
+          "Initiative": {
+            "value": "[parameters('Initiative')]"
+          },
+          "LeaseDuration": {
+            "value": "[parameters('LeaseDuration')]"
+          },
+          "CreationDate": {
+            "value": "[parameters('CreationDate')]"
+          },
+          "PrivateEndPointName": {
+            "value": "[variables('PrivateendpointName')]"
+          }
+
+        }
+      }
+    }
+  ],
+  "outputs": {
+  }
+}
