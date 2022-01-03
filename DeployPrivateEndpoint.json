@@ -125,7 +125,7 @@
         "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
       ],
       "properties": {
-        "registrationEnabled": false,
+        "registrationEnabled": true,
         "virtualNetwork": {
           "id": "[parameters('vnetid')]"
         }
