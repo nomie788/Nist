@@ -78,7 +78,6 @@
         "description": "Enable private link for keyvault? ...will deploy linked template"
       }
     },
-
     "tenantId": {
       "type": "string",
       "defaultValue": "[subscription().tenantId]",
@@ -100,7 +99,6 @@
         "description": "Resource id of the Workspace vault diagnostics storage "
       }
     },
-
     "logsRetentionInDays": {
       "type": "int",
       "defaultValue": 0,
@@ -255,12 +253,9 @@
     ],
     "accessPolicies": "[if(equals(parameters('AccessPolicy'), 'VaultAccess'), variables('VaultAccess'), variables('rbac'))]",
     "Environment": "[resourceGroup().tags.environment]",
-    "privateEndpointName": "[concat('pe-', variables('VaultName'), '-', variables('Environment'))]",
-    "privateDnsZoneName": "[concat('privatelink.', variables('PrivateEndPointName'), '.windows.net')]",
-    "pvtendpointdnsgroupname": "[concat(variables('privateEndpointName'),'/mydnsgroupname')]",
+    "privateEndpointName": "[concat(variables('VaultName'))]",
     "TargetResourceId": "[resourceId('Microsoft.KeyVault/vaults', variables('vaultName'))]",
     "TargetsubResourceName": "vault"
-
   },
   "resources": [
     {
@@ -343,7 +338,7 @@
      "properties": {
       "mode": "Incremental",
       "templateLink": {
-        "uri": "https://cs710032000dddd313c.blob.core.windows.net/armtemplates/DeployPrivateEndpoint.json?sp=r&st=2022-01-02T22:32:31Z&se=2022-01-20T06:32:31Z&spr=https&sv=2020-08-04&sr=b&sig=qSDLy499MAWkUH5fyXVJ7bJ1GvBd6DIt2%2B%2Fu8XzAM9g%3D",
+        "uri": "[parameters('Linkedtemplateuri')]",
         "contentVersion": "1.0.0.0"
       },
         "parameters": {
