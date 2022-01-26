@@ -1,0 +1,199 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "acrName": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 50,
+      "metadata": {
+        "description": "Name of your Azure Container Registry"
+      }
+    },
+    "acrAdminUserEnabled": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Enable admin user that have push / pull permission to the registry."
+      }
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "westus",
+        "westcentralus",
+        "westus2",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "northcentralus",
+        "southcentralus",
+        "South Central US"
+      ]
+    },
+    "Initiative": {
+      "type": "string",
+      "metadata": {
+        "description": "Initiative behind the resource"
+      }
+    },
+    "LeaseDuration": {
+      "type": "string",
+      "metadata": {
+        "description": "when should the resource lease expire"
+      }
+    },
+    "CreationDate": {
+      "type": "string",
+      "defaultValue": "[utcNow('yyyy-MM-dd')]",
+      "metadata": {
+        "description": "Date the resource was created"
+      }
+    },
+    "enablePrivateLink": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Enable private link for for storage account? ...will deploy linked template"
+      }
+    },
+    "Diagworkspaceid": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Resource id of the Workspace vault diagnostics storage "
+      }
+    },
+    "vnetId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Specify Resource Id of the Vnet you want to deploy Priavte endpoint on to"
+      }
+    },
+    "PESubnetname": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the Subnet that should be tied to the Priavte endpoint for Keyvault"
+      }
+    },
+    "LinkedTemplateUri": {
+      "type": "string",
+      "metadata": {
+        "description": "Date the resource was created"
+      }
+    }
+  },
+  "variables": {
+    "AcrName": "[concat('ACR', parameters('acrName'))]",
+    "TargetResourceId": "[resourceId('Microsoft.ContainerRegistry/registries/', variables('acrName'))]",
+    "TargetsubResourceName": "registry",
+    "privateEndpointName": "[concat(variables('AcrName'))]",
+    "diagnosticsName": "[format('{0}-dgs', variables('acrName'))]"
+
+  },
+  "resources": [
+    {
+      "name": "[variables('acrName')]",
+      "type": "Microsoft.ContainerRegistry/registries",
+      "apiVersion": "2019-05-01",
+      "location": "[parameters('location')]",
+      "comments": "Container registry for storing docker images",
+      "tags": {
+        "LeaseDuration": "[parameters('LeaseDuration')]",
+        "CreationDate": "[parameters('CreationDate')]",
+        "Initiative": "[parameters('initiative')]"
+      },
+      "sku": {
+        "name": "Premium",
+        "tier": "Premium"
+      },
+      "properties": {
+        "adminUserEnabled": "[parameters('acrAdminUserEnabled')]"
+      }
+    },
+    {
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "apiVersion": "2021-05-01-preview",
+      "scope": "[format('Microsoft.ContainerRegistry/registries/{0}', variables('acrName'))]",
+      "name": "[variables('diagnosticsName')]",
+      "properties": {
+        "workspaceId": "[parameters('diagworkspaceid')]",
+        "logs": [
+          {
+            "category": "ContainerRegistryRepositoryEvents",
+            "enabled": true
+          },
+          {
+            "category": "ContainerRegistryLoginEvents",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "AllMetrics",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ContainerRegistry/registries', variables('acrName'))]"
+      ]
+    },
+    {
+      "condition": "[parameters('enablePrivatelink')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "linkedPETemplate",
+      "dependsOn": [
+        "[resourceId('Microsoft.ContainerRegistry/registries', variables('AcrName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[parameters('LinkedTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "vnetId": {
+            "value": "[parameters('vnetid')]"
+          },
+          "TargetResourceId": {
+            "value": "[variables('TargetResourceId')]"
+          },
+          "TargetSubResourcename": {
+            "value": [
+              "[variables('TargetsubResourceName')]"
+            ]
+          },
+          "PESubnetname": {
+            "value": "[parameters('PESubnetname')]"
+          },
+          "Initiative": {
+            "value": "[parameters('Initiative')]"
+          },
+          "LeaseDuration": {
+            "value": "[parameters('LeaseDuration')]"
+          },
+          "CreationDate": {
+            "value": "[parameters('CreationDate')]"
+          },
+          "PrivateEndPointName": {
+            "value": "[variables('PrivateendpointName')]"
+          }
+        }
+      }
+    }
+
+  ],
+  "outputs": {
+    "acrLoginServer": {
+      "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries',variables('acrName')),'2019-05-01').loginServer]",
+      "type": "string"
+    }
+  }
+}
