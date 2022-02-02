@@ -24,19 +24,13 @@
     },
     "skuName": {
       "type": "string",
-      "defaultValue": "standard",
+      "defaultValue": "premium",
       "allowedValues": [
         "standard",
         "premium"
       ],
       "metadata": {
         "description": "Specifies whether the key vault is a standard vault or a premium vault."
-      }
-    },
-    "VaultadminName": {
-      "type": "String",
-      "metadata": {
-        "description": "Resource name of User Assigned Identity passed in workspace.properties.primaryUserAssignedIdentity."
       }
     },
     "enabledForDeployment": {
@@ -78,6 +72,109 @@
         "description": "Enable private link for keyvault? ...will deploy linked template"
       }
     },
+    "CreateKey": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Create Key true for yes or false for no"
+      }
+    },
+    "keyName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The name of the key to be created."
+      }
+    },
+    "keyType": {
+      "type": "string",
+      "defaultValue": "",
+      "allowedValues": [
+        "",
+        "RSA",
+        "EC"
+      ],
+      "metadata": {
+        "description": "The JsonWebKeyType of the key to be created."
+      }
+    },
+    "keyOps": {
+      "type": "array",
+      "defaultValue": [
+        "decrypt",
+        "encrypt",
+        "import",
+        "release",
+        "sign",
+        "unwrapKey",
+        "verify",
+        "wrapKey"
+      ],
+      "metadata": {
+        "description": "The permitted JSON web key operations of the key to be created."
+      }
+    },
+    "keySize": {
+      "type": "int",
+      "defaultValue": 2048,
+      "allowedValues": [
+        2048,
+        3072,
+        4096
+      ],
+
+      "metadata": {
+        "description": "The size in bits of the key to be created."
+      }
+    },
+    "curveName": {
+      "type": "string",
+      "defaultValue": "",
+      "allowedValues": [
+        "P-256",
+        "P-256K",
+        "P-384",
+        "P-521"
+      ],
+      "metadata": {
+        "description": "The JsonWebKeyCurveName of the key to be created."
+      }
+    },
+    "KeyExpirationDate": {
+      "type": "int",
+      "defaultValue": 1706875979,
+      "metadata": {
+        "description": "unix Timestamp for Key Expiration. use Unix timestamp conversion tool.https://www.epochconverter.com/ example 2-2-2022 = 1706875979"
+      }
+    },
+    "CreateSecret": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Create Certificate? true for yes or false for no"
+      }
+    },
+    "SecretName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The name of the Secret to be created."
+      }
+    },
+    "SecretContenttype": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Content type of Secret"
+      }
+    },
+    "SecretValue": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Secret Value"
+      }
+    },
     "tenantId": {
       "type": "string",
       "defaultValue": "[subscription().tenantId]",
@@ -99,15 +196,6 @@
         "description": "Resource id of the Workspace vault diagnostics storage "
       }
     },
-    "logsRetentionInDays": {
-      "type": "int",
-      "defaultValue": 0,
-      "maxValue": 365,
-      "minValue": 0,
-      "metadata": {
-        "description": "Specifies the number of days that logs are gonna be kept. If you do not want to apply any retention policy and retain data forever, set value to 0."
-      }
-    },
     "PESubnetname": {
       "type": "string",
       "defaultValue": "",
@@ -117,7 +205,6 @@
     },
     "ObjectId": {
       "type": "string",
-      "defaultValue": "bdc1cf08-4f34-4da8-9e22-55718b75f185",
       "metadata": {
         "description": "Specifies the object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies. Get it by using Get-AzADUser or Get-AzADServicePrincipal cmdlets. (Application ID)"
       }
@@ -145,17 +232,18 @@
         "description": "Initiative behind the resource"
       }
     },
-    "LeaseDuration": {
-      "type": "string",
-      "metadata": {
-        "description": "when should the resource lease expire"
-      }
-    },
     "CreationDate": {
       "type": "string",
       "defaultValue": "[utcNow('yyyy-MM-dd')]",
       "metadata": {
         "description": "Date the resource was created"
+      }
+    },
+    "LeaseDuration": {
+      "type": "string",
+      "defaultValue": "2 yrs",
+      "metadata": {
+        "description": "when should the resource lease expire"
       }
     },
     "secretsPermissions": {
@@ -224,7 +312,6 @@
   "functions": [],
   "variables": {
     "VaultName": "[concat('Kv', parameters('Keyvaultname'))]",
-    "primaryUserAssignedIdentity": "[parameters('VaultadminName')]",
     "VaultAdministratorRoleName": "[parameters('rolename')]",
     "keyVaultAdministratorRoleDefinition": "00482a5a-887f-4fb3-b363-3b7fe8e74483",
     "roleIdMapping": {
@@ -238,6 +325,7 @@
       "Key Vault Secrets User": "4633458b-17de-408a-b874-0445c86b69e6"
     },
     "rbac": "",
+    "RbacName": "[guid(variables('roleIdMapping')[parameters('roleName')], parameters('objectId'), resourceId('Microsoft.KeyVault/vaults', variables('VaultName')))]",
     "VaultAccess": [
       {
         "tenantId": "[parameters('tenantId')]",
@@ -246,8 +334,6 @@
           "secrets": "[parameters('secretsPermissions')]",
           "keys": "[parameters('KeyPermissions')]",
           "certificates": "[parameters('CertificatePermissions')]"
-
-
         }
       }
     ],
@@ -267,6 +353,7 @@
         "enabledForDeployment": "[parameters('enabledForDeployment')]",
         "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
         "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+        "tenantId": "[subscription().tenantId]",
         "enablePurgeProtection": true,
         "enableRbacAuthorization": true,
         "accessPolicies": "[variables('accessPolicies')]",
@@ -278,8 +365,7 @@
         "sku": {
           "family": "A",
           "name": "[parameters('skuName')]"
-        },
-        "tenantId": "[parameters('tenantId')]"
+        }
       },
       "tags": {
         "LeaseDuration": "[parameters('LeaseDuration')]",
@@ -291,7 +377,7 @@
           "type": "Microsoft.KeyVault/vaults/providers/diagnosticsettings",
           "name": "[concat(variables('VaultName'), '/Microsoft.Insights/service')]",
           "apiVersion": "2016-09-01",
-          "location": "[resourceGroup().location]",
+          "location": "[parameters('location')]",
           "dependsOn": [
             "[concat('Microsoft.KeyVault/vaults/', variables('VaultName'))]"
           ],
@@ -303,21 +389,20 @@
                 "enabled": true,
                 "retentionPolicy": {
                   "enabled": true,
-                  "days": "[parameters('LogsRetentionInDays')]"
+                  "days": "365"
                 }
               }
             ]
           }
         }
       ]
-
     },
-     {
+    {
       "condition": "[equals(parameters('accesspolicy'), 'Rbac')]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-04-01-preview",
       "scope": "[format('Microsoft.KeyVault/vaults/{0}', variables('VaultName'))]",
-      "name": "[guid(variables('roleIdMapping')[parameters('roleName')], parameters('objectId'), resourceId('Microsoft.KeyVault/vaults', variables('VaultName')))]",
+      "name": "[variables('RbacName')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleIdMapping')[parameters('roleName')])]",
         "principalId": "[parameters('objectId')]",
@@ -328,19 +413,61 @@
       ]
     },
     {
+      "condition": "[parameters('CreateKey')]",
+      "type": "Microsoft.KeyVault/vaults/keys",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[format('{0}/{1}', variables('VaultName'), parameters('KeyName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "attributes": {
+          "enabled": true,
+          "exp": "[parameters('keyexpirationdate')]"
+        },
+        "crv": "[parameters('curveName')]",
+        "kty": "[parameters('keytype')]",
+        "key_ops": "[parameters('keyops')]",
+        "key_size": "[parameters('keysize')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))]",
+        "[variables('RbacName')]"
+      ]
+    },
+    {
+      "condition": "[parameters('CreateSecret')]",
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[format('{0}/{1}', variables('VaultName'), parameters('SecretName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "attributes": {
+          "enabled": true,
+          "exp": "[parameters('keyexpirationdate')]"
+        },
+        "contentType": "[parameters('Secretcontenttype')]",
+        "value": "[parameters('SecretValue')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))]",
+        "[variables('RbacName')]"
+      ]
+    },
+    {
       "condition": "[parameters('enablePrivatelink')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2021-04-01",
       "name": "linkedTemplate",
       "dependsOn": [
-        "[resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))]"
-     ],
-     "properties": {
-      "mode": "Incremental",
-      "templateLink": {
-        "uri": "[parameters('Linkedtemplateuri')]",
-        "contentVersion": "1.0.0.0"
-      },
+        "[resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))]",
+        "[resourceId('Microsoft.KeyVault/vaults/keys', variables('VaultName'), parameters('KeyName'))]"
+
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[parameters('Linkedtemplateuri')]",
+          "contentVersion": "1.0.0.0"
+        },
         "parameters": {
           "location": {
             "value": "[parameters('location')]"
@@ -377,5 +504,9 @@
     }
   ],
   "outputs": {
+    "proxyKey": {
+      "type": "object",
+      "value": "[reference(resourceId('Microsoft.KeyVault/vaults/keys', variables('vaultName'), parameters('keyName')), '2019-09-01', 'Full')]"
+    }
   }
 }
