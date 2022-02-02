@@ -156,7 +156,7 @@
     },
     "SecretName": {
       "type": "string",
-      "defaultValue": "",
+      "defaultValue": "emty",
       "metadata": {
         "description": "The name of the Secret to be created."
       }
