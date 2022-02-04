@@ -156,7 +156,7 @@
     },
     "SecretName": {
       "type": "string",
-      "defaultValue": "emty",
+      "defaultValue": "",
       "metadata": {
         "description": "The name of the Secret to be created."
       }
@@ -239,13 +239,6 @@
         "description": "Date the resource was created"
       }
     },
-    "LeaseDuration": {
-      "type": "string",
-      "defaultValue": "2 yrs",
-      "metadata": {
-        "description": "when should the resource lease expire"
-      }
-    },
     "secretsPermissions": {
       "type": "array",
       "defaultValue": [
@@ -303,7 +296,7 @@
     },
     "LinkedTemplateUri": {
       "type": "string",
-      "defaultValue": "https://cs710032000dddd313c.blob.core.windows.net/armtemplates/DeployPrivateEndpoint.json?sp=r&st=2022-01-02T22:32:31Z&se=2022-01-20T06:32:31Z&spr=https&sv=2020-08-04&sr=b&sig=qSDLy499MAWkUH5fyXVJ7bJ1GvBd6DIt2%2B%2Fu8XzAM9g%3D",
+      "defaultValue": "https://raw.githubusercontent.com/nomie788/Nist/main/DeployPrivateEndpoint.json",
       "metadata": {
         "description": "Date the resource was created"
       }
@@ -341,7 +334,8 @@
     "Environment": "[resourceGroup().tags.environment]",
     "privateEndpointName": "[concat(variables('VaultName'))]",
     "TargetResourceId": "[resourceId('Microsoft.KeyVault/vaults', variables('vaultName'))]",
-    "TargetsubResourceName": "vault"
+    "TargetsubResourceName": "vault",
+    "add2Years": "[dateTimeAdd(parameters('CreationDate'), 'P2Y')]"
   },
   "resources": [
     {
@@ -368,7 +362,7 @@
         }
       },
       "tags": {
-        "LeaseDuration": "[parameters('LeaseDuration')]",
+        "LeaseDuration": "[variables('add2years')]",
         "CreationDate": "[parameters('CreationDate')]",
         "Initiative": "[parameters('initiative')]"
       },
@@ -490,7 +484,7 @@
             "value": "[parameters('Initiative')]"
           },
           "LeaseDuration": {
-            "value": "[parameters('LeaseDuration')]"
+            "value": "[variables('add2years')]"
           },
           "CreationDate": {
             "value": "[parameters('CreationDate')]"
