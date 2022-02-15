@@ -62,13 +62,17 @@
       "metadata": {
         "description": "Date the resource was created"
       }
+    },
+    "PrivateDnsZoneid": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource Id for Priavte DNS zone for resource type"
+      }
     }
-
   },
   "variables": {
     "Environment": "[resourceGroup().tags.environment]",
     "privateEndpointName": "[concat('pe-', parameters('PrivateEndPointName'), '-', variables('Environment'))]",
-    "privateDnsZoneName": "[concat('privatelink.', variables('PrivateEndPointName'), '.windows.net')]",
     "pvtendpointdnsgroupname": "[concat(variables('privateEndpointName'),'/mydnsgroupname')]"
 
   },
@@ -102,42 +106,11 @@
       }
     },
     {
-      "type": "Microsoft.Network/privateDnsZones",
-      "apiVersion": "2020-01-01",
-      "name": "[variables('privateDnsZoneName')]",
-      "location": "global",
-      "dependsOn": [
-        "[variables('privateEndpointName')]"
-      ],
-      "tags": {
-        "LeaseDuration": "[parameters('LeaseDuration')]",
-        "CreationDate": "[parameters('CreationDate')]",
-        "Initiative": "[parameters('initiative')]"
-      },
-      "properties": ""
-    },
-    {
-      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-      "apiVersion": "2020-01-01",
-      "name": "[concat(variables('privateDnsZoneName'), '/', variables('privateDnsZoneName'), '-link')]",
-      "location": "global",
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
-      ],
-      "properties": {
-        "registrationEnabled": true,
-        "virtualNetwork": {
-          "id": "[parameters('vnetid')]"
-        }
-      }
-    },
-    {
       "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
       "apiVersion": "2020-06-01",
       "name": "[variables('pvtendpointdnsgroupname')]",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]",
         "[variables('privateEndpointName')]"
       ],
       "properties": {
@@ -145,7 +118,7 @@
           {
             "name": "config1",
             "properties": {
-              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
+              "privateDnsZoneId": "[parameters('privatednszoneid')]"
             }
           }
         ]
