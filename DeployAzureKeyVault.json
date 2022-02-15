@@ -260,6 +260,13 @@
       "metadata": {
         "description": "Date the resource was created"
       }
+    },
+    "PrivateDnsZoneid": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Resource Id for Priavte DNS zone for resource type"
+      }
     }
   },
   "functions": [],
@@ -430,8 +437,10 @@
           },
           "PrivateEndPointName": {
             "value": "[variables('PrivateendpointName')]"
+          },
+          "PrivateDnsZoneid": {
+            "value": "[parameters('PrivateDnsZoneid')]"
           }
-
         }
       }
     }
