@@ -1,8 +1,9 @@
 {
-  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "location": {
+      "type": "string",
       "allowedValues": [
         "westus",
         "westcentralus",
@@ -12,13 +13,13 @@
         "eastus2",
         "northcentralus",
         "southcentralus"
-      ],
-      "type": "String"
+      ]
     },
     "storageAccountName": {
-      "type": "String"
+      "type": "string"
     },
     "storageAccountSkuName": {
+      "type": "string",
       "allowedValues": [
         "Standard_LRS",
         "Standard_ZRS",
@@ -26,35 +27,34 @@
         "Standard_RAGRS",
         "Premium_LRS"
       ],
-      "type": "String",
       "metadata": {
         "description": "Storage Account SKU"
       }
     },
     "kind": {
+      "type": "string",
       "allowedValues": [
         "BlobStorage",
         "StorageV2"
-      ],
-      "type": "String"
+      ]
     },
     "accessTier": {
+      "type": "string",
       "allowedValues": [
         "Hot",
         "Cool"
-      ],
-      "type": "String"
+      ]
     },
     "enabledForDeployment": {
+      "type": "bool",
       "defaultValue": false,
-      "type": "Bool",
       "metadata": {
         "description": "Specifies whether Azure Virtual Machines are permitted to retrieve certificates stored as secrets from the key vault."
       }
     },
     "enabledForDiskEncryption": {
+      "type": "bool",
       "defaultValue": false,
-      "type": "Bool",
       "metadata": {
         "description": "Specifies whether Azure Disk Encryption is permitted to retrieve secrets from the vault and unwrap keys."
       }
@@ -75,126 +75,177 @@
     "containerSoftDeleteRetentionDays": {
       "type": "int"
     },
-    "AccessPolicy": {
-      "defaultValue": "rbac",
-      "allowedValues": [
-        "VaultAccess",
-        "Rbac"
-      ],
-      "type": "String",
-      "metadata": {
-        "description": "Provide vault access on access policy"
-      }
-    },
     "enabledForTemplateDeployment": {
+      "type": "bool",
       "defaultValue": false,
-      "type": "Bool",
       "metadata": {
         "description": "Specifies whether Azure Resource Manager is permitted to retrieve secrets from the key vault."
       }
     },
     "enableDatalakeGen2": {
-      "type": "Bool"
+      "type": "bool"
     },
     "Initiative": {
-      "type": "String",
+      "type": "string",
       "metadata": {
         "description": "Initiative behind the resource"
       }
     },
-    "LeaseDuration": {
-      "type": "String",
-      "metadata": {
-        "description": "when should the resource lease expire"
-      }
-    },
     "CreationDate": {
+      "type": "string",
       "defaultValue": "[utcNow('yyyy-MM-dd')]",
-      "type": "String",
       "metadata": {
         "description": "Date the resource was created"
       }
     },
     "enablePrivateLinkSTG": {
+      "type": "bool",
       "defaultValue": true,
-      "type": "Bool",
       "metadata": {
         "description": "Enable private link for for storage account? ...will deploy linked template"
       }
     },
     "enablePrivateLinkKV": {
+      "type": "bool",
       "defaultValue": true,
-      "type": "Bool",
       "metadata": {
         "description": "Enable private link for keyvault? ...will deploy linked template"
       }
     },
     "CreateNewKV": {
+      "type": "bool",
       "defaultValue": true,
-      "type": "Bool",
       "metadata": {
         "description": "True if creating new Key vault. false if using an existing one"
       }
     },
+    "CreateKey": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Create Key true for yes or false for no"
+      }
+    },
     "KeyVaultName": {
-      "type": "String",
+      "type": "string",
       "metadata": {
         "description": "Provide Vault name new or existing"
       }
     },
+    "keyName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the key to be created."
+      }
+    },
+    "keyType": {
+      "type": "string",
+      "defaultValue": "",
+      "allowedValues": [
+        "",
+        "RSA",
+        "EC"
+      ],
+      "metadata": {
+        "description": "The JsonWebKeyType of the key to be created."
+      }
+    },
+    "keyOps": {
+      "type": "array",
+      "defaultValue": [
+        "decrypt",
+        "encrypt",
+        "import",
+        "release",
+        "sign",
+        "unwrapKey",
+        "verify",
+        "wrapKey"
+      ],
+      "metadata": {
+        "description": "The permitted JSON web key operations of the key to be created."
+      }
+    },
+    "keySize": {
+      "type": "int",
+      "defaultValue": 2048,
+      "allowedValues": [
+        2048,
+        3072,
+        4096
+      ],
+
+      "metadata": {
+        "description": "The size in bits of the key to be created."
+      }
+    },
+    "curveName": {
+      "type": "string",
+      "defaultValue": "",
+      "allowedValues": [
+        "P-256",
+        "P-256K",
+        "P-384",
+        "P-521"
+      ],
+      "metadata": {
+        "description": "The JsonWebKeyCurveName of the key to be created."
+      }
+    },
+    "KeyExpirationDate": {
+      "type": "int",
+      "defaultValue": 1706875979,
+      "metadata": {
+        "description": "unix Timestamp for Key Expiration. use Unix timestamp conversion tool.https://www.epochconverter.com/ example 2-2-2022 = 1706875979"
+      }
+    },
+    "userAssignedIdentityName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the User Assigned Identity."
+      }
+    },
     "skuName": {
+      "type": "string",
       "defaultValue": "standard",
       "allowedValues": [
         "standard",
         "premium"
       ],
-      "type": "String",
       "metadata": {
         "description": "Specifies whether the key vault is a standard vault or a premium vault."
       }
     },
-    "VaultadminName": {
-      "type": "String",
-      "metadata": {
-        "description": "Resource name of User Assigned Identity passed in workspace.properties.primaryUserAssignedIdentity."
-      }
-    },
     "vnetId": {
+      "type": "string",
       "defaultValue": "",
-      "type": "String",
       "metadata": {
         "description": "Specify Resource Id of the Vnet you want to deploy Priavte endpoint on to"
       }
     },
     "Diagworkspaceid": {
+      "type": "string",
       "defaultValue": "",
-      "type": "String",
       "metadata": {
         "description": "Resource id of the Workspace vault diagnostics storage "
       }
     },
     "StgPESubnetname": {
+      "type": "string",
       "defaultValue": "",
-      "type": "String",
       "metadata": {
         "description": "Name of the Subnet that should be tied to the Priavte endpoint for Keyvault"
       }
     },
     "KvPESubnetname": {
+      "type": "string",
       "defaultValue": "",
-      "type": "String",
       "metadata": {
         "description": "Name of the Subnet that should be tied to the Priavte endpoint for Keyvault"
       }
     },
-    "ObjectId": {
-      "defaultValue": "bdc1cf08-4f34-4da8-9e22-55718b75f185",
-      "type": "String",
-      "metadata": {
-        "description": "Specifies the object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies. Get it by using Get-AzADUser or Get-AzADServicePrincipal cmdlets. (Application ID)"
-      }
-    },
     "roleName": {
+      "type": "string",
       "defaultValue": "Key Vault Secrets User",
       "allowedValues": [
         "Key Vault Administrator",
@@ -206,62 +257,171 @@
         "Key Vault Secrets Officer",
         "Key Vault Secrets User"
       ],
-      "type": "String",
       "metadata": {
         "description": "Specifies the role the user will get with the secret in the vault. Valid values are: Key Vault Administrator, Key Vault Certificates Officer, Key Vault Crypto Officer, Key Vault Crypto Service Encryption User, Key Vault Crypto User, Key Vault Reader, Key Vault Secrets Officer, Key Vault Secrets User."
       }
     },
     "kvLinkedTemplateUri": {
-      "defaultValue": "https://cs710032000dddd313c.blob.core.windows.net/armtemplates/DeployAzureKeyVault.json?sp=r&st=2022-01-03T03:41:58Z&se=2022-04-03T10:41:58Z&spr=https&sv=2020-08-04&sr=b&sig=9Zo4R4tPIStralRSQbVm0ncS9CTYBeJOYfQQrBxKYRc%3D",
-      "type": "String",
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/nomie788/Nist/main/DeployAzureKeyVault.json",
       "metadata": {
         "description": "Date the resource was created"
       }
     },
     "peLinkedTemplateUri": {
-      "defaultValue": "https://cs710032000dddd313c.blob.core.windows.net/armtemplates/DeployPrivateEndpoint.json?sp=r&st=2022-01-02T22:32:31Z&se=2022-01-20T06:32:31Z&spr=https&sv=2020-08-04&sr=b&sig=qSDLy499MAWkUH5fyXVJ7bJ1GvBd6DIt2%2B%2Fu8XzAM9g%3D",
-      "type": "String",
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/nomie788/Nist/main/DeployPrivateEndpoint.json",
       "metadata": {
         "description": "Date the resource was created"
+      }
+    },
+    "PrivateDnsZoneid": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Resource Id for Priavte DNS zone for resource type"
       }
     }
   },
   "variables": {
     "Environment": "[resourceGroup().tags.environment]",
-    "storageAccountName": "[concat('st', parameters('storageaccountname'), variables('Environment'))]",
+    "storageAccountName": "[concat('st', parameters('storageaccountname'), toLower(variables('Environment')))]",
     "privateEndpointName": "[concat('st', Parameters('storageaccountName'))]",
     "TargetResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('StorageaccountName'))]",
-    "TargetsubResourceName": "blob"
+    "TargetsubResourceName": "blob",
+    "add2Years": "[dateTimeAdd(parameters('CreationDate'), 'P2Y')]",
+    "VaultName": "[concat('Kv', parameters('Keyvaultname'))]"
   },
   "resources": [
     {
-      "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2019-06-01",
+      "condition": "[parameters('Createkey')]",
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2021-09-30-PREVIEW",
+      "name": "[parameters('userAssignedIdentityName')]",
+      "location": "[parameters('location')]"
+    },
+    {
+      "condition": "[parameters('CreateNewKV')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "kvlinkedTemplate",
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[parameters('kvLinkedTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "vnetId": {
+            "value": "[parameters('vnetid')]"
+          },
+          "PESubnetname": {
+            "value": "[parameters('kvPESubnetname')]"
+          },
+          "Initiative": {
+            "value": "[parameters('Initiative')]"
+          },
+          "CreationDate": {
+            "value": "[parameters('CreationDate')]"
+          },
+          "keyVaultName": {
+            "value": "[parameters('KeyVaultName')]"
+          },
+          "keyName": {
+            "value": "[parameters('KeyName')]"
+          },
+          "keyType": {
+            "value": "[parameters('KeyType')]"
+          },
+          "curveName": {
+            "value": "[parameters('CurveName')]"
+          },
+          "CreateKey": {
+            "value": "[parameters('CreateKey')]"
+          },
+          "skuName": {
+            "value": "[parameters('skuName')]"
+          },
+          "ObjectId": {
+            "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName'))).principalId]"
+          },
+          "roleName": {
+            "value": "[parameters('roleName')]"
+          },
+          "enabledForDeployment": {
+            "value": "[parameters('EnabledforDeployment')]"
+          },
+          "enabledForTemplateDeployment": {
+            "value": "[parameters('EnabledforTemplateDeployment')]"
+          },
+          "enabledForDiskEncryption": {
+            "value": "[parameters('enabledForDiskEncryption')]"
+          },
+          "Diagworkspaceid": {
+            "value": "[parameters('DiagWorkspaceid')]"
+          },
+          "enablePrivateLink": {
+            "value": "[parameters('EnablePrivateLinkkv')]"
+          },
+          "LinkedTemplateUri": {
+            "value": "[parameters('peLinkedTemplateUri')]"
+          }
+        }
+      }
+    },
+    {
       "name": "[variables('storageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-04-01",
       "location": "[parameters('location')]",
-      "dependsOn": [],
-      "tags": {
-        "Initiative": "[parameters('Initiative')]",
-        "LeaseDuration": "[parameters('LeaseDuration')]",
-        "CreationDate": "[parameters('CreationDate')]"
-      },
       "sku": {
         "name": "[parameters('storageAccountSkuName')]"
       },
       "kind": "[parameters('kind')]",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName')))]": {}
+        }
+      },
       "properties": {
         "accessTier": "[parameters('accessTier')]",
         "isHnsEnabled": "[parameters('enableDatalakeGen2')]",
         "allowBlobPublicAccess": "False",
+        "requireInfrastructureEncryption": true,
         "encryption": {
-          "keySource": "Microsoft.Storage",
-          "requireInfrastructureEncryption": true,
+          "identity": {
+            "userAssignedIdentity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName'))]"
+          
+        },
           "services": {
             "blob": {
+              "keyType": "Account",
               "enabled": true
             }
+          },
+          "keySource": "Microsoft.Keyvault",
+          "keyvaultproperties": {
+            "keyname": "[parameters('KeyName')]",
+            "keyvaulturi": "[concat('https://', variables('VaultName'), '.vault.azure.net/')]"
+ //           "keyvaulturi": "[if(endsWith(reference(resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))).vaultUri, '/'), substring(reference(resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))).vaultUri, 0, sub(length(reference(resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))).vaultUri), 1)), reference(resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))).vaultUri)]"
           }
         }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName'))]",
+        "[resourceId('Microsoft.Resources/deployments', 'kvlinkedTemplate')]"
+      ],
+      "tags": {
+        "Initiative": "[parameters('Initiative')]",
+        "LeaseDuration": "[variables('add2years')]",
+        "CreationDate": "[parameters('CreationDate')]"
       }
     },
     {
@@ -283,10 +443,13 @@
         }
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+        "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Resources/deployments', 'kvlinkedTemplate')]"
+
       ]
     },
     {
+      "condition": "[parameters('enablePrivatelinkSTG')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2021-04-01",
       "name": "linkedPETemplate",
@@ -321,90 +484,21 @@
             "value": "[parameters('Initiative')]"
           },
           "LeaseDuration": {
-            "value": "[parameters('LeaseDuration')]"
+            "value": "[variables('add2years')]"
           },
           "CreationDate": {
             "value": "[parameters('CreationDate')]"
           },
           "PrivateEndPointName": {
             "value": "[variables('PrivateendpointName')]"
+          },
+          "PrivateDnsZoneid": {
+            "value": "[parameters('PrivateDnsZoneid')]"
           }
         }
-      },
-      "condition": "[parameters('enablePrivatelinkSTG')]"
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2021-04-01",
-      "name": "linkedKVTemplate",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('StorageaccountName'))]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[parameters('kvLinkedTemplateUri')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "location": {
-            "value": "[parameters('location')]"
-          },
-          "vnetId": {
-            "value": "[parameters('vnetid')]"
-          },
-          "PESubnetname": {
-            "value": "[parameters('kvPESubnetname')]"
-          },
-          "Initiative": {
-            "value": "[parameters('Initiative')]"
-          },
-          "LeaseDuration": {
-            "value": "[parameters('LeaseDuration')]"
-          },
-          "CreationDate": {
-            "value": "[parameters('CreationDate')]"
-          },
-          "keyVaultName": {
-            "value": "[parameters('KeyVaultName')]"
-          },
-          "VaultadminName": {
-            "value": "[parameters('VaultadminName')]"
-          },
-          "AccessPolicy": {
-            "value": "[parameters('accesspolicy')]"
-          },
-          "skuName": {
-            "value": "[parameters('skuName')]"
-          },
-          "ObjectId": {
-            "value": "[parameters('Objectid')]"
-          },
-          "roleName": {
-            "value": "[parameters('roleName')]"
-          },
-          "logsRetentionInDays": {
-            "value": 365
-          },
-          "enabledForDeployment": {
-            "value": "[parameters('EnabledforDeployment')]"
-          },
-          "enabledForTemplateDeployment": {
-            "value": "[parameters('EnabledforTemplateDeployment')]"
-          },
-          "Diagworkspaceid": {
-            "value": "[parameters('DiagWorkspaceid')]"
-          },
-          "enablePrivateLink": {
-            "value": "[parameters('EnablePrivateLinkkv')]"
-          },
-          "LinkedTemplateUri": {
-            "value": "[parameters('peLinkedTemplateUri')]"
-          }
-        }
-      },
-      "condition": "[parameters('CreateNewKV')]"
+      }
     }
   ],
-  "outputs": {}
+  "outputs": {
+  }
 }
