@@ -366,9 +366,9 @@
           "enabled": true,
           "exp": "[parameters('keyexpirationdate')]"
         },
-        "crv": "[parameters('curveName')]",
+   //     "crv": "[parameters('curveName')]",
         "kty": "[parameters('keytype')]",
-        "key_ops": "[parameters('keyops')]",
+  //      "key_ops": "[parameters('keyops')]",
         "key_size": "[parameters('keysize')]"
       },
       "dependsOn": [
