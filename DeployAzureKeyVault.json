@@ -314,7 +314,7 @@
         "enablePurgeProtection": true,
         "enableRbacAuthorization": true,
         "accessPolicies": "[variables('vaultaccess')]",
-        "enableSoftDelete": "true",
+        "enableSoftDelete": true,
         "networkAcls": {
           "defaultAction": "Allow",
           "bypass": "AzureServices"
