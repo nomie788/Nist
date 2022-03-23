@@ -314,7 +314,7 @@
         "enablePurgeProtection": true,
         "enableRbacAuthorization": true,
         "accessPolicies": "[variables('vaultaccess')]",
-        "enableSoftDelete": true,
+        "enableSoftDelete": "true",
         "networkAcls": {
           "defaultAction": "Allow",
           "bypass": "AzureServices"
@@ -365,9 +365,9 @@
           "enabled": true,
           "exp": "[parameters('keyexpirationdate')]"
         },
-   //     "crv": "[parameters('curveName')]",
+        "crv": "[parameters('curveName')]",
         "kty": "[parameters('keytype')]",
-  //      "key_ops": "[parameters('keyops')]",
+        "key_ops": "[parameters('keyops')]",
         "key_size": "[parameters('keysize')]"
       },
       "dependsOn": [
@@ -449,6 +449,10 @@
     "proxyKey": {
       "type": "object",
       "value": "[reference(resourceId('Microsoft.KeyVault/vaults/keys', variables('vaultName'), parameters('keyName')), '2019-09-01', 'Full')]"
+    },
+    "Vaulturi": {
+      "type": "object",
+      "value": "[reference(resourceId('Microsoft.KeyVault/vaults/keys', variables('vaultName')), '2019-09-01', 'Full')]"
     }
   }
 }
