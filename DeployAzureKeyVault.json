@@ -452,7 +452,7 @@
     },
     "Vaulturi": {
       "type": "object",
-      "value": "[reference(resourceId('Microsoft.KeyVault/vaults', variables('vaultName')), '2019-09-01', 'Full')]"
+      "value": "[reference(resourceId('Microsoft.KeyVault/vaults', variables('vaultName')), '2021-10-01', 'Full')]"
     }
   }
 }
