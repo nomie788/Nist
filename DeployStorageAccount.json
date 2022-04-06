@@ -409,10 +409,9 @@
           "keySource": "Microsoft.Keyvault",
           "keyvaultproperties": {
             "keyname": "[parameters('KeyName')]",
-            "keyvaulturi": "[concat('https://', variables('VaultName'), '.vault.azure.net/')]"
- //           "keyvaulturi": "[if(endsWith(reference(resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))).vaultUri, '/'), substring(reference(resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))).vaultUri, 0, sub(length(reference(resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))).vaultUri), 1)), reference(resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))).vaultUri)]"
+            "keyvaulturi": "[reference(resourceId('Microsoft.KeyVault/vaults', variables('vaultName')),'2016-10-01', 'full').properties.vaultUri]"
           }
-        }
+        } 
       },
       "dependsOn": [
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName'))]",
