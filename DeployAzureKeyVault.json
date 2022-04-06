@@ -285,15 +285,6 @@
       "Key Vault Secrets User": "4633458b-17de-408a-b874-0445c86b69e6"
     },
     "RbacName": "[guid(variables('roleIdMapping')[parameters('roleName')], parameters('objectId'), resourceId('Microsoft.KeyVault/vaults', variables('VaultName')))]",
-    "VaultAccess": [
-      {
-        "tenantId": "[parameters('tenantId')]",
-        "objectId": "[parameters('objectId')]",
-        "permissions": {
-          "keys": "[parameters('KeyPermissions')]"
-        }
-      }
-    ],
     "Environment": "[resourceGroup().tags.environment]",
     "privateEndpointName": "[concat(variables('VaultName'))]",
     "TargetResourceId": "[resourceId('Microsoft.KeyVault/vaults', variables('vaultName'))]",
@@ -456,10 +447,6 @@
     "proxyKey": {
       "type": "object",
       "value": "[reference(resourceId('Microsoft.KeyVault/vaults/keys', variables('vaultName'), parameters('keyName')), '2019-09-01', 'Full')]"
-    },
-    "Vaulturi": {
-      "type": "object",
-      "value": "[reference(resourceId('Microsoft.KeyVault/vaults', variables('vaultName')), '2021-10-01', 'Full')]"
     }
   }
 }
