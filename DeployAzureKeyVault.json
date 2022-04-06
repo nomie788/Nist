@@ -312,7 +312,6 @@
         "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
         "tenantId": "[subscription().tenantId]",
         "enablePurgeProtection": true,
-//        "enableRbacAuthorization": true,
         "accessPolicies": [
           {
             "tenantId": "[parameters('tenantId')]",
