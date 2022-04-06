@@ -313,7 +313,15 @@
         "tenantId": "[subscription().tenantId]",
         "enablePurgeProtection": true,
         "enableRbacAuthorization": true,
-        "accessPolicies": "[variables('vaultaccess')]",
+        "accessPolicies": [
+          {
+            "tenantId": "[parameters('tenantId')]",
+            "objectId": "[parameters('objectId')]",
+            "permissions": {
+              "keys": "[parameters('KeyPermissions')]"
+            }
+          }
+        ],
         "enableSoftDelete": "true",
         "networkAcls": {
           "defaultAction": "Allow",
