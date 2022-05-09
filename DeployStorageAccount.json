@@ -31,13 +31,6 @@
         "description": "Storage Account SKU"
       }
     },
-    "kind": {
-      "type": "string",
-      "allowedValues": [
-        "BlobStorage",
-        "StorageV2"
-      ]
-    },
     "accessTier": {
       "type": "string",
       "allowedValues": [
@@ -275,13 +268,21 @@
         "description": "Date the resource was created"
       }
     },
-    "PrivateDnsZoneid": {
+    "KvDnsZoneid": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Resource Id for Priavte DNS zone for resource type"
+      }
+    },
+    "StgDnsZoneid": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
         "description": "Resource Id for Priavte DNS zone for resource type"
       }
     }
+
   },
   "variables": {
     "Environment": "[resourceGroup().tags.environment]",
@@ -371,6 +372,9 @@
           },
           "LinkedTemplateUri": {
             "value": "[parameters('peLinkedTemplateUri')]"
+          },
+          "PrivateDnsZoneid": {
+            "value": "[parameters('KvDnsZoneid')]"
           }
         }
       }
@@ -383,7 +387,7 @@
       "sku": {
         "name": "[parameters('storageAccountSkuName')]"
       },
-      "kind": "[parameters('kind')]",
+      "kind": "StorageV2",
       "identity": {
         "type": "UserAssigned",
         "userAssignedIdentities": {
@@ -393,13 +397,13 @@
       "properties": {
         "accessTier": "[parameters('accessTier')]",
         "isHnsEnabled": "[parameters('enableDatalakeGen2')]",
-        "allowBlobPublicAccess": "False",
+        "allowBlobPublicAccess": false,
         "requireInfrastructureEncryption": true,
+        "supportsHttpsTrafficOnly": true,
         "encryption": {
           "identity": {
             "userAssignedIdentity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName'))]"
-          
-        },
+          },
           "services": {
             "blob": {
               "keyType": "Account",
@@ -411,11 +415,15 @@
             "keyname": "[parameters('KeyName')]",
             "keyvaulturi": "[reference(resourceId('Microsoft.KeyVault/vaults', variables('vaultName')),'2016-10-01', 'full').properties.vaultUri]"
           }
-        } 
+        }, 
+        "networkAcls": {
+          "defaultAction": "Allow",
+          "bypass": "AzureServices"
+        }
       },
       "dependsOn": [
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentityName'))]",
-        "[resourceId('Microsoft.Resources/deployments', 'kvlinkedTemplate')]"
+        "kvlinkedTemplate"
       ],
       "tags": {
         "Initiative": "[parameters('Initiative')]",
@@ -429,9 +437,10 @@
       "apiVersion": "2021-08-01",
       "properties": {
         "restorePolicy": {
-          "enabled": "[parameters('enableRestorePolicy')]",
-          "days": "[parameters('containerRestorePeriodDays')]"
+          "days": "[if(equals(parameters('enabledatalakegen2'), 'true'), 'false', parameters('enableRestorePolicy'))]",
+          "enabled": "[parameters('enableRestorePolicy')]"
         },
+        "IsVersioningEnabled": "[parameters('enableRestorePolicy')]",
         "deleteRetentionPolicy": {
           "enabled": true,
           "days": "[parameters('blobSoftDeleteRetentionDays')]"
@@ -439,12 +448,13 @@
         "containerDeleteRetentionPolicy": {
           "enabled": true,
           "days": "[parameters('containerSoftDeleteRetentionDays')]"
+        },
+      "changeFeed": {
+          "enabled": "[if(equals(parameters('enabledatalakegen2'), 'true'), 'false', parameters('enableRestorePolicy'))]"
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-        "[resourceId('Microsoft.Resources/deployments', 'kvlinkedTemplate')]"
-
+        "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
       ]
     },
     {
@@ -492,7 +502,7 @@
             "value": "[variables('PrivateendpointName')]"
           },
           "PrivateDnsZoneid": {
-            "value": "[parameters('PrivateDnsZoneid')]"
+            "value": "[parameters('StgDnsZoneid')]"
           }
         }
       }
