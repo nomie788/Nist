@@ -91,7 +91,8 @@
       },
       "properties": {
         "subnet": {
-            "id": "[concat(parameters('vnetid'), '/subnets', '/', parameters('PESubnetname'))]"
+            "id": "[concat(parameters('vnetid'),'/subnets/',parameters('PESubnetname'))]",
+          
 
         },
         "privateLinkServiceConnections": [
