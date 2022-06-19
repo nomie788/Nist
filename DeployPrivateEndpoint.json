@@ -71,7 +71,8 @@
     }
   },
   "variables": {
-    "Environment": "[resourceGroup().tags.environment]",
+//    "Environment": "[resourceGroup().tags.environment]",
+    "Environment": "dev",
     "privateEndpointName": "[concat('pe-', parameters('PrivateEndPointName'), '-', variables('Environment'))]",
     "pvtendpointdnsgroupname": "[concat(variables('privateEndpointName'),'/mydnsgroupname')]"
 
