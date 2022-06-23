@@ -22,6 +22,23 @@
         "South Central US"
       ]
     },
+    "pelocation": {
+      "type": "string",
+      "allowedValues": [
+        "westus",
+        "westcentralus",
+        "westus2",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "northcentralus",
+        "southcentralus",
+        "South Central US"
+      ]
+    },
+    "PrivateendpointRG": {
+      "type": "string"
+    },
     "skuName": {
       "type": "string",
       "defaultValue": "premium",
@@ -138,7 +155,7 @@
     },
     "CreateSecret": {
       "type": "bool",
-      "defaultValue": false,
+      "defaultValue": true,
       "metadata": {
         "description": "Create Certificate? true for yes or false for no"
       }
@@ -289,20 +306,17 @@
     "privateEndpointName": "[concat(variables('VaultName'))]",
     "TargetResourceId": "[resourceId('Microsoft.KeyVault/vaults', variables('vaultName'))]",
     "TargetsubResourceName": "vault",
-    "add2Years": "[dateTimeAdd(parameters('CreationDate'), 'P2Y')]"
+    "add2Years": "[dateTimeAdd(parameters('CreationDate'), 'P2Y')]",
+    "vnetsubid": "[split(parameters('vnetid'), '/')]",
+    "pesubid": "[concat(variables('vnetsubid')[0],variables('vnetsubid')[2])]"
   },
   "resources": [
     {
-      "apiVersion": "2021-06-01-preview",
+      "apiVersion": "2021-11-01-preview",
       "location": "[parameters('location')]",
       "name": "[variables('Vaultname')]",
       "type": "Microsoft.KeyVault/vaults",
       "properties": {
-        "enabledForDeployment": "[parameters('enabledForDeployment')]",
-        "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
-        "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
-        "tenantId": "[subscription().tenantId]",
-        "enablePurgeProtection": true,
         "accessPolicies": [
           {
             "tenantId": "[parameters('tenantId')]",
@@ -312,7 +326,11 @@
             }
           }
         ],
-        "enableSoftDelete": "true",
+        "enabledForDeployment": "[parameters('enabledForDeployment')]",
+        "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
+        "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+        "enablePurgeProtection": true,
+        "enableSoftDelete": true,
         "networkAcls": {
           "defaultAction": "Allow",
           "bypass": "AzureServices"
@@ -320,7 +338,9 @@
         "sku": {
           "family": "A",
           "name": "[parameters('skuName')]"
-        }
+        },
+        "tenantId": "[subscription().tenantId]",
+        "vaultUri": "[concat('https://', variables('VaultName'), '.vault.azure.net/')]"
       },
       "tags": {
         "LeaseDuration": "[variables('add2years')]",
@@ -394,6 +414,8 @@
       "condition": "[parameters('enablePrivatelink')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2021-04-01",
+      "subscriptionId": "[variables('pesubid')]",
+      "ResourceGroup": "[parameters('PrivateendpointRG')]",
       "name": "linkedTemplate",
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', variables('VaultName'))]",
@@ -408,7 +430,7 @@
         },
         "parameters": {
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[parameters('pelocation')]"
           },
           "vnetId": {
             "value": "[parameters('vnetid')]"
@@ -447,6 +469,10 @@
     "proxyKey": {
       "type": "object",
       "value": "[reference(resourceId('Microsoft.KeyVault/vaults/keys', variables('vaultName'), parameters('keyName')), '2019-09-01', 'Full')]"
+    },
+    "Vaulturi": {
+      "type": "object",
+      "value": "[reference(resourceId('Microsoft.KeyVault/vaults', variables('vaultName')), '2021-10-01', 'Full')]"
     }
   }
 }
